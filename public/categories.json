@@ -1,0 +1,118 @@
+[
+  {
+    "id": 0,
+    "name": "All News"
+  },
+  {
+    "id": 1,
+    "name": "Breaking News"
+  },
+  {
+    "id": 2,
+    "name": "Business"
+  },
+  {
+    "id": 3,
+    "name": "Technology"
+  },
+  {
+    "id": 4,
+    "name": "Health"
+  },
+  {
+    "id": 5,
+    "name": "Sports"
+  },
+  {
+    "id": 6,
+    "name": "Entertainment"
+  },
+  {
+    "id": 7,
+    "name": "Science"
+  },
+  {
+    "id": 8,
+    "name": "Politics"
+  },
+  {
+    "id": 9,
+    "name": "Education"
+  },
+  {
+    "id": 10,
+    "name": "Lifestyle"
+  },
+  {
+    "id": 11,
+    "name": "World"
+  },
+  {
+    "id": 12,
+    "name": "Crime"
+  },
+  {
+    "id": 13,
+    "name": "Weather"
+  },
+  {
+    "id": 14,
+    "name": "Travel"
+  },
+  {
+    "id": 15,
+    "name": "Environment"
+  },
+  {
+    "id": 16,
+    "name": "Opinion"
+  },
+  {
+    "id": 17,
+    "name": "Culture"
+  },
+  {
+    "id": 18,
+    "name": "Food"
+  },
+  {
+    "id": 19,
+    "name": "Fashion"
+  },
+  {
+    "id": 20,
+    "name": "Religion"
+  },
+  {
+    "id": 21,
+    "name": "Automotive"
+  },
+  {
+    "id": 22,
+    "name": "Real Estate"
+  },
+  {
+    "id": 23,
+    "name": "Art"
+  },
+  {
+    "id": 24,
+    "name": "Social Media"
+  },
+  {
+    "id": 25,
+    "name": "Military"
+  },
+  {
+    "id": 26,
+    "name": "Economy"
+  },
+  {
+    "id": 27,
+    "name": "Elections"
+  },
+  {
+    "id": 28,
+    "name": "Startups"
+  }
+]
