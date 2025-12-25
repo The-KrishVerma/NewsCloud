@@ -1,0 +1,98 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@import "tailwindcss";
+@plugin "daisyui"{
+    themes: light --default;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  --color-primary:#403F3F;
+  --color-secondary: #D72050;
+  --color-base-200: #f3f3f3;
+  --color-base-300: #e7e7e7;
+  --color-accent: #706f6f;
+
+}
+
+*{
+    font-family: "poppins", sans-serif;
+}
+
+a.active{
+  color: aqua;
+  @apply bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 
+
+}
+
+
+
+
+
+
+.glow-border {
+  position: relative;
+  z-index: 0;
+  border-radius: 1rem; /* Match with Tailwind's rounded-3xl */
+}
+
+.glow-border::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  z-index: -1;
+  background: linear-gradient(
+  45deg,
+  #00ff00,  /* green */
+  #39ff14,  /* neon green */
+  #adff2f,  /* yellow-green */
+  #ffff00,  /* yellow */
+  #ffbf00,  /* amber */
+  #ff8000,  /* orange */
+  #ff4000,  /* orange-red */
+  #ff0000,  /* red */
+  #ff007f,  /* rose */
+  #ff00ff,  /* magenta */
+  #bf00ff,  /* purple */
+  #8a2be2,  /* blue violet */
+  #6a0dad,  /* indigo */
+  #4b0082,  /* deep indigo */
+  #0000ff,  /* blue */
+  #040cfc,  /* vivid blue */
+  #00bfff,  /* deep sky blue */
+  #00ffff,  /* cyan */
+  #ffffff,  /* white */
+  #e0e0e0,  /* soft white */
+  #b103f5   /* electric violet */
+);
+
+  background-size: 400% 400%;
+  animation: glowing-border 6s ease infinite;
+  border-radius: inherit;
+  filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.glow-border:hover::before {
+  opacity: 1;
+}
+
+@keyframes glowing-border {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
