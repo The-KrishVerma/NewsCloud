@@ -43,6 +43,17 @@ const HomeLayouts = () => {
             <nav className='w-11/12 mx-auto my-3'>
                 <Navbar />
             </nav>
+            <div className="lg:hidden mb-6 w-11/12 mx-auto">
+                <FilterBox 
+                    country={selectedCountry} 
+                    language={selectedLanguage} 
+                    category={selectedCategory} 
+                    setSelectedCountry={setSelectedCountry} 
+                    setSelectedLanguage={setSelectedLanguage} 
+                    setSelectedCategory={setSelectedCategory} 
+                    categories={categories} 
+                />
+            </div>
             
             <section className='w-11/12 mx-auto my-3 animate-slide-up'>
                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-blue-900/30 p-6 mb-6">
@@ -77,19 +88,7 @@ const HomeLayouts = () => {
                 </aside>
 
                 <section className='col-span-1 lg:col-span-6'>
-                    {location.pathname === '/' && (
-                        <div className="lg:hidden mb-6">
-                            <FilterBox 
-                                country={selectedCountry} 
-                                language={selectedLanguage} 
-                                category={selectedCategory} 
-                                setSelectedCountry={setSelectedCountry} 
-                                setSelectedLanguage={setSelectedLanguage} 
-                                setSelectedCategory={setSelectedCategory} 
-                                categories={categories} 
-                            />
-                        </div>
-                    )}
+                    
 
                     {location.pathname === '/' ? (
                         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-blue-900/30 p-6 animate-slide-up">
