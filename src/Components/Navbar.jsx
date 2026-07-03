@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import userIcon from "../assets/KV.jpeg";
+import userIcon from "../assets/user.png";
 import { AuthContext } from '../Firebase/Provider/AuthProvider';
 import Profile from '../Pages/Profile';
 
