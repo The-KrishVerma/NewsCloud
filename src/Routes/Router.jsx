@@ -1,8 +1,8 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter } from "react-router-dom";
 import HomeLayouts from "../Layouts/HomeLayouts";
 import Home from "../Pages/Home";
 import About from "../Pages/About";
-import Summarize from "../Pages/Summarize";
+import LinkSummarizer from "../Pages/LinkSummarizer";
 import NewsFeed from "../Pages/NewsFeed";
 import CategoryNews from "../Pages/CategoryNews";
 import Login from "../Pages/Login";
@@ -11,6 +11,10 @@ import AuthLayout from "../Layouts/AuthLayout";
 import NewsDetails from "../Pages/NewsDetails";
 import PrivateRoute from "../Firebase/Provider/PrivateRoute";
 import Loading from "../Pages/Loading";
+import CompareNews from "../Pages/CompareNews";
+import NewsFinder from "../Pages/NewsFinder";
+import Analytics from "../Pages/Analytics";
+import Profile from "../Pages/Profile";
 
 const router = createBrowserRouter([
   {
@@ -23,16 +27,25 @@ const router = createBrowserRouter([
       },
       {
         path: "newsfinder",
-        element: <NewsFeed showSummarizer={true}></NewsFeed>,
+        element: <NewsFinder></NewsFinder>,
       },
       {
         path: "about",            // <-- changed from "/about" to "about"
         element: <About></About>,
       },
       {
-        path: "summarize",
-        element: <Summarize></Summarize>,
+        path: "link-summarizer",
+        element: <LinkSummarizer></LinkSummarizer>,
       },
+      {
+        path: "compare",
+        element: <CompareNews></CompareNews>,
+      },
+      {
+        path: "analytics",
+        element: <Analytics></Analytics>,
+      },
+
       {
         path: "category/:id",     // <-- changed from "/category/:id" to "category/:id"
         element: <CategoryNews></CategoryNews>,

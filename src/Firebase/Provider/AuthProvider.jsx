@@ -69,7 +69,10 @@ const AuthProvider = ({ children }) => {
 
   const updateUser = (userInfo) => {
     if (auth.currentUser) {
-      return updateProfile(auth.currentUser, userInfo);
+      return updateProfile(auth.currentUser, userInfo).then(() => {
+        // Force state update to re-render UI with new photo/name
+        setUser({ ...auth.currentUser });
+      });
     }
   };
 

@@ -1,10 +1,12 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import userIcon from "../assets/user.png";
 import { AuthContext } from '../Firebase/Provider/AuthProvider';
+import Profile from '../Pages/Profile';
 
 const Navbar = () => {
   const { user, logOut } = useContext(AuthContext);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogOut = async () => {
     try {
@@ -27,20 +29,36 @@ const Navbar = () => {
       <div className="flex flex-col md:flex-row justify-between items-center px-4 md:px-6 py-3 gap-4">
         {/* User email */}
         <div className="hidden lg:block text-xs text-gray-500 truncate font-medium">
-          {user ? `Welcome, ${user.email?.split('@')[0]}` : 'Guest User'}
+          {user ? `Welcome, ${user.displayName || user.email?.split('@')[0] || 'User'}` : 'Guest User'}
         </div>
 
         {/* Login section */}
-        <div className="login-btn flex gap-3 items-center order-1 md:order-2">
-          <img
-            className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border-2 border-gray-600 hover:border-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/50"
-            src={user?.photoURL || userIcon}
-            onError={(e) => {
-              e.target.onerror = null; 
-              e.target.src = userIcon;
-            }}
-            alt="User avatar"
-          />
+        <div className="login-btn flex gap-3 items-center order-1 md:order-2 relative">
+          {user ? (
+            <div className="relative">
+              <img
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border-2 border-gray-600 hover:border-blue-500 transition-all hover:shadow-lg hover:shadow-blue-500/50 cursor-pointer"
+                src={user?.photoURL || userIcon}
+                onError={(e) => {
+                  e.target.onerror = null; 
+                  e.target.src = userIcon;
+                }}
+                alt="User avatar"
+              />
+              {isProfileOpen && (
+                <div className="absolute right-0 top-14 w-72 z-[100]">
+                  <Profile onClose={() => setIsProfileOpen(false)} />
+                </div>
+              )}
+            </div>
+          ) : (
+            <img
+              className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover border-2 border-gray-600"
+              src={userIcon}
+              alt="Guest avatar"
+            />
+          )}
           {user ? (
             <button onClick={handleLogOut} className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-medium px-4 py-2 rounded-lg hover:shadow-lg hover:shadow-blue-500/50 transition-all text-sm md:text-base">
               Logout
@@ -60,8 +78,17 @@ const Navbar = () => {
           <NavLink to="/newsfinder" className={navLinkClass}>
             NewsFinder
           </NavLink>
+          <NavLink to="/link-summarizer" className={navLinkClass}>
+            URL Summarizer
+          </NavLink>
+          <NavLink to="/compare" className={navLinkClass}>
+            Compare
+          </NavLink>
+          <NavLink to="/analytics" className={navLinkClass}>
+            Insights
+          </NavLink>
           <NavLink to="/about" className={navLinkClass}>
-            About
+            About Us
           </NavLink>
         </div>
       </div>

@@ -11,9 +11,9 @@ const About = () => {
 
   return (
     <div>
-      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-blue-900/30 p-6 animate-slide-up mt-0">
+      <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-blue-900/30 p-6 animate-slide-up">
         <div className="w-full">
-              <h1 className="text-4xl md:text-5xl font-extrabold mb-2 text-gradient">About NewsCloud</h1>
+              <h2 className="text-4xl md:text-5xl font-black mb-6 text-gradient">About NewsCloud</h2>
               <p className="text-gray-300 text-lg leading-relaxed mb-4">
                 <strong>NewsCloud</strong> is an AI-powered news platform that delivers concise, trustworthy summaries and personalized news feeds — so you can know what matters in minutes.
               </p>

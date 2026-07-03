@@ -8,7 +8,7 @@ const LatestNews = ({ country, language }) => {
     useEffect(() => {
         let cancelled = false;
         const apikey = import.meta.env.VITE_NEWS_API_KEY;
-        const API_URL = `https://gnews.io/api/v4/top-headlines?category=general&lang=${language}&country=${country}&max=50&apikey=${apikey}`;
+        const API_URL = `https://newsapi.org/v2/top-headlines?category=general&country=${country}&pageSize=50&apiKey=${apikey}`;
 
         fetch(API_URL)
             .then((res) => {
@@ -27,7 +27,7 @@ const LatestNews = ({ country, language }) => {
                     }
                 }
                 setHeadlines([]);
-                setFetchFailed(true);
+                setFetchFailed(false); // No articles found, but connection succeeded
             })
             .catch(() => {
                 if (!cancelled) {
@@ -59,7 +59,10 @@ const LatestNews = ({ country, language }) => {
                 speed={50}
             >
                 {headlines.map((news, index) => (
-                    <span key={index} className="mx-4 whitespace-nowrap">{news}</span>
+                    <React.Fragment key={index}>
+                        <span className="mx-4 whitespace-nowrap">{news}</span>
+                        <span className="text-cyan-500 font-bold mx-2">•</span>
+                    </React.Fragment>
                 ))}
             </Marquee>
         </div>

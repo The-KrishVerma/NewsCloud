@@ -1,6 +1,7 @@
 // src/Firebase/Firebase.config.js
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getStorage } from "firebase/storage";
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -11,11 +12,6 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-try {
-  // Analytics may not be available in all environments (e.g. tests/SSR)
-  getAnalytics(app);
-} catch (e) {
-  // ignore analytics errors
-}
+export const storage = getStorage(app);
 
 export default app;

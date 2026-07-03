@@ -121,9 +121,9 @@ const Login = () => {
         {/* Left branding panel */}
           <div className="relative hidden lg:flex flex-col justify-center items-start p-12 bg-gradient-to-br from-blue-700 via-indigo-800 to-black text-white">
           <h1 className="text-4xl font-extrabold tracking-tight mb-3">NewsCloud</h1>
-          <p className="text-sm text-blue-100/90 mb-6">Curated headlines, fast summaries, and reliable sources — all in one place.</p>
+          <p className="text-sm text-blue-100/90 mb-6 leading-relaxed">Experience the future of news. AI-driven summaries, personalized insights, and unbiased comparisons — delivered instantly.</p>
 
-          <div className="space-y-4 w-full">
+          <div className="space-y-4 w-full z-10">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">📰</div>
               <div>
@@ -136,6 +136,20 @@ const Login = () => {
               <div>
                 <div className="text-sm font-semibold">Fast Summaries</div>
                 <div className="text-xs text-blue-200/80">Get the gist in seconds</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">📊</div>
+              <div>
+                <div className="text-sm font-semibold">Reading Insights</div>
+                <div className="text-xs text-blue-200/80">Track your news consumption</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">⚖️</div>
+              <div>
+                <div className="text-sm font-semibold">AI Comparisons</div>
+                <div className="text-xs text-blue-200/80">Analyze multiple perspectives</div>
               </div>
             </div>
           </div>
