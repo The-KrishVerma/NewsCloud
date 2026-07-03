@@ -82,7 +82,7 @@ const Navbar = () => {
             URL Summarizer
           </NavLink>
           <NavLink to="/compare" className={navLinkClass}>
-            Compare
+            AI Comparison
           </NavLink>
           <NavLink to="/analytics" className={navLinkClass}>
             Insights
