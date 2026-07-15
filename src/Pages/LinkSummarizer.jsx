@@ -1,15 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Readability } from "@mozilla/readability";
 import ReactMarkdown from "react-markdown";
 import { FiLink } from "react-icons/fi";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const LinkSummarizer = () => {
   const [url, setUrl] = useState("");
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isReading, setIsReading] = useState(false);
+  const [articleContent, setArticleContent] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationResult, setVerificationResult] = useState("");
   const apiUrl = import.meta.env.VITE_SMRY_KEY;
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Cleanup speech synthesis on unmount
+  useEffect(() => {
+    return () => {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const queryUrl = params.get('url');
+    if (queryUrl) {
+      setUrl(queryUrl);
+      
+      // Check if it's already in history
+      try {
+        const saved = JSON.parse(localStorage.getItem('newscloud_summarizer_history') || '[]');
+        const existing = saved.find(item => item.url === queryUrl);
+        if (existing && existing.summary) {
+          setSummary(existing.summary);
+          return;
+        }
+      } catch (e) {
+        // ignore JSON parse errors
+      }
+      
+      // If not in history but passed in URL, we could auto-summarize here,
+      // but requiring the user to click summarize is safer to avoid looping.
+    }
+  }, [location.search]);
 
   const handleSummarize = async (e) => {
     e.preventDefault();
@@ -64,13 +103,23 @@ const LinkSummarizer = () => {
       const parsedArticle = reader.parse();
       if (parsedArticle && parsedArticle.textContent) {
         articleText = parsedArticle.textContent.substring(0, 15000);
+        setArticleContent(articleText);
       }
 
       if (!articleText) {
         throw new Error("Could not extract text from this URL. The site might be blocking access.");
       }
 
-      const promptText = `Please provide a highly detailed, comprehensive summary of the following article. Structure it nicely with bullet points and key takeaways. \n\nArticle Text:\n${articleText}`;
+      const promptText = `Please act as an expert analyst and provide a highly detailed, professional summary of the following article. Format the output in Markdown with the following structure:
+1. "## 📌 Executive Summary" - A brief, punchy overview.
+2. "## 🔑 Key Takeaways" - A bulleted list of the most important facts.
+3. "## 📖 Detailed Analysis" - A deeper dive into the article's contents.
+4. "## 💡 Conclusion" - A short wrap-up of its implications.
+
+Make sure to use bold text for emphasis and keep the tone informative.
+
+Article Text:
+${articleText}`;
 
       const res = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiUrl}`,
@@ -83,6 +132,22 @@ const LinkSummarizer = () => {
 
       const responseText = res.data.candidates?.[0]?.content?.parts?.[0]?.text;
       setSummary(responseText);
+
+      // Save to history
+      try {
+        const saved = JSON.parse(localStorage.getItem('newscloud_summarizer_history') || '[]');
+        const newHistory = [
+          { url: targetUrl, summary: responseText, time: new Date().toISOString() },
+          ...saved.filter(item => item.url !== targetUrl)
+        ].slice(0, 50); // keep last 50
+        localStorage.setItem('newscloud_summarizer_history', JSON.stringify(newHistory));
+        window.dispatchEvent(new Event('summarizer_history_updated'));
+        
+        // Update URL to match current summary without reloading
+        navigate(`/link-summarizer?url=${encodeURIComponent(targetUrl)}`, { replace: true });
+      } catch (e) {
+        console.warn("Failed to save history", e);
+      }
     } catch (err) {
       console.error(err);
       let errorMessage = "Failed to summarize the article. Please try again.";
@@ -103,6 +168,69 @@ const LinkSummarizer = () => {
     }
   };
 
+  const handleReadSummary = () => {
+    if ('speechSynthesis' in window) {
+      if (isReading) {
+        window.speechSynthesis.cancel();
+        setIsReading(false);
+      } else {
+        window.speechSynthesis.cancel(); // Clear any existing speech
+        setIsReading(true);
+        
+        // Prevent GC by storing utterances globally
+        window.__speechUtterances = [];
+        
+        // Strip markdown before reading
+        const textToRead = summary.replace(/[#*`_]/g, '');
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        
+        utterance.onend = () => {
+          setIsReading(false);
+        };
+        utterance.onerror = () => {
+          setIsReading(false);
+        };
+        
+        window.__speechUtterances.push(utterance);
+        window.speechSynthesis.speak(utterance);
+      }
+    } else {
+      alert("Sorry, your browser doesn't support text to speech!");
+    }
+  };
+
+  const handleVerifyBias = async () => {
+    if (!articleContent) return;
+    setIsVerifying(true);
+    setVerificationResult("");
+    
+    try {
+      const promptText = `Please act as an expert fact-checker and media analyst. Analyze the following article for bias and verify its key claims. Format the output in Markdown with the exact following structure:
+1. "## ⚖️ Bias Assessment" - Analyze the article for any political, corporate, or emotional bias. Identify the tone and perspective.
+2. "## 🔍 Fact Verification" - Highlight key claims made in the article and assess their credibility or point out if they need further verification.
+
+Article Text:
+${articleContent}`;
+
+      const res = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiUrl}`,
+        {
+          contents: [{ role: "user", parts: [{ text: promptText }] }],
+          generationConfig: { responseMimeType: "text/plain" }
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      const responseText = res.data.candidates?.[0]?.content?.parts?.[0]?.text;
+      setVerificationResult(responseText);
+    } catch (err) {
+      console.error(err);
+      setVerificationResult("Failed to verify the article. Please try again.");
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl shadow-lg border border-blue-900/30 p-6 animate-slide-up">
       <h2 className="text-4xl md:text-5xl font-black mb-2 text-gradient">URL Summarizer</h2>
@@ -111,7 +239,7 @@ const LinkSummarizer = () => {
       </p>
 
       {/* Input Bar */}
-      <div className="max-w-2xl mx-auto mb-10">
+      <div className="max-w-2xl mx-auto mb-6">
         <form onSubmit={handleSummarize} className="relative flex items-center">
           <div className="absolute left-4 text-gray-400">
             <FiLink size={20} />
@@ -121,7 +249,7 @@ const LinkSummarizer = () => {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://example.com/article"
-            className="w-full bg-gray-800/80 border border-blue-900/50 rounded-full py-4 pl-12 pr-40 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition shadow-lg"
+            className="w-full bg-gray-800/80 border border-blue-900/50 rounded-full py-4 pl-12 pr-48 text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition shadow-lg"
             disabled={loading}
             required
           />
@@ -150,14 +278,49 @@ const LinkSummarizer = () => {
 
       {summary && !loading && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between mb-6 pb-2 border-b border-blue-900/30">
+          <div className="flex items-center justify-between mb-6 pb-2 border-b border-blue-900/30 flex-wrap gap-4">
             <h2 className="text-xl font-bold text-gray-200">AI Summary</h2>
-          </div>
-          <div className="bg-gray-900/60 rounded-xl p-6 md:p-8 border border-blue-800/50 shadow-inner animate-fade-in">
-            <div className="prose prose-invert prose-blue max-w-none prose-p:leading-relaxed prose-li:text-gray-300">
-              <ReactMarkdown>{summary}</ReactMarkdown>
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleVerifyBias}
+                disabled={isVerifying}
+                className="flex items-center gap-2 px-4 py-1.5 text-sm rounded-full font-semibold shadow-md transition-all bg-purple-500/20 text-purple-400 border border-purple-500/50 hover:bg-purple-500/30 disabled:opacity-50"
+              >
+                <span className="text-lg">{isVerifying ? "⏳" : "🔍"}</span>
+                {isVerifying ? "Checking..." : "Verify & Check Bias"}
+              </button>
+              <button 
+                onClick={handleReadSummary}
+                className={`flex items-center gap-2 px-4 py-1.5 text-sm rounded-full font-semibold shadow-md transition-all ${
+                  isReading 
+                    ? "bg-red-500/20 text-red-400 border border-red-500/50 hover:bg-red-500/30" 
+                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30"
+                }`}
+              >
+                <span className="text-lg">{isReading ? "⏹️" : "▶️"}</span>
+                {isReading ? "Stop Playing" : "Play Summary"}
+              </button>
             </div>
           </div>
+          <div className="relative group">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+            <div className="relative bg-gray-900/90 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-blue-800/50 shadow-2xl animate-fade-in">
+              <div className="prose prose-invert prose-blue max-w-none prose-p:leading-relaxed prose-li:text-gray-300 prose-headings:text-transparent prose-headings:bg-clip-text prose-headings:bg-gradient-to-r prose-headings:from-cyan-400 prose-headings:to-blue-500">
+                <ReactMarkdown>{summary}</ReactMarkdown>
+              </div>
+            </div>
+          </div>
+
+          {verificationResult && (
+            <div className="relative group mt-8 animate-fade-in">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
+              <div className="relative bg-gray-900/90 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-purple-800/50 shadow-2xl">
+                <div className="prose prose-invert prose-purple max-w-none prose-p:leading-relaxed prose-li:text-gray-300 prose-headings:text-transparent prose-headings:bg-clip-text prose-headings:bg-gradient-to-r prose-headings:from-pink-400 prose-headings:to-purple-500">
+                  <ReactMarkdown>{verificationResult}</ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

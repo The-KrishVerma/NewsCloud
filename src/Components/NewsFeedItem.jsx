@@ -163,7 +163,7 @@ Please respond in JSON format with exactly two fields:
               : "text-emerald-400 bg-emerald-950/30 border-emerald-800/50 hover:text-emerald-300 hover:bg-emerald-900/40"
           }`}
         >
-          <span>{isPlaying ? "⏹️" : "🎧"}</span> {isPlaying ? "Stop" : "Listen"}
+          <span>{isPlaying ? "⏹️" : "▶️"}</span> {isPlaying ? "Stop" : "Play"}
         </button>
 
         <a 
