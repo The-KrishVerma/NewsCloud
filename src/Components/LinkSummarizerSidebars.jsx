@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiLink, FiZap, FiFileText } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 
 export const LinkSummarizerLeftSidebar = () => (
   <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-blue-900/30 animate-fade-in shadow-lg sticky top-24">
@@ -23,19 +24,77 @@ export const LinkSummarizerLeftSidebar = () => (
   </div>
 );
 
-export const LinkSummarizerRightSidebar = () => (
-  <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-blue-900/30 animate-fade-in shadow-lg sticky top-24">
-    <h3 className="font-bold text-lg mb-3 text-blue-400 flex items-center gap-2">
-      <FiFileText /> Capabilities
-    </h3>
-    <div className="space-y-3 text-sm text-gray-300">
-      <p>
-        The AI URL Summarizer uses an advanced proxy-rotation engine to bypass security blocks and fetch raw HTML.
-      </p>
-      <div className="p-3 bg-blue-900/20 rounded-lg border border-blue-800/30">
-        <span className="block font-semibold text-cyan-300 mb-1">Deep Reading</span>
-        It reads up to 15,000 characters of the article to ensure it captures all the critical context before summarizing.
-      </div>
+export const LinkSummarizerRightSidebar = () => {
+  const navigate = useNavigate();
+  const [history, setHistory] = useState([]);
+
+  const loadHistory = () => {
+    try {
+      const saved = localStorage.getItem('newscloud_summarizer_history');
+      if (saved) setHistory(JSON.parse(saved));
+    } catch {
+      // ignore localstorage errors
+    }
+  };
+
+  useEffect(() => {
+    loadHistory();
+    window.addEventListener('summarizer_history_updated', loadHistory);
+    return () => window.removeEventListener('summarizer_history_updated', loadHistory);
+  }, []);
+
+  const handleRemove = (e, urlToRemove) => {
+    e.stopPropagation();
+    if (window.confirm(`Are you sure you want to remove this URL from your history?`)) {
+      const newHistory = history.filter(item => item.url !== urlToRemove);
+      localStorage.setItem('newscloud_summarizer_history', JSON.stringify(newHistory));
+      setHistory(newHistory);
+    }
+  };
+
+  return (
+    <div className="space-y-1.5 bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-blue-900/30 h-fit sticky top-24 shadow-lg animate-fade-in">
+      <h3 className="font-bold text-base mb-4 text-cyan-400 flex items-center gap-2">
+        <span>🕒</span> Recent Summaries
+      </h3>
+      {history.length > 0 ? (
+        <div className="space-y-2">
+          {history.map((item, idx) => {
+            const timeStr = !item.time ? '' : new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Format URL to be more readable
+            let displayUrl = item.url;
+            try {
+              const urlObj = new URL(item.url);
+              displayUrl = urlObj.hostname.replace('www.', '') + '...';
+            } catch (e) {
+              // ignore
+            }
+
+            return (
+              <div key={idx} className="w-full flex items-center bg-gray-700/30 hover:bg-gray-700/80 border border-gray-600/30 hover:border-cyan-500/50 rounded-lg transition-all group">
+                <button
+                  onClick={() => navigate(`/link-summarizer?url=${encodeURIComponent(item.url)}`)}
+                  className="flex-1 flex flex-col items-start justify-center text-left px-3 py-2 text-sm text-gray-300 group-hover:text-cyan-300 truncate"
+                  title={item.url}
+                >
+                  <span className="truncate w-full font-medium">{displayUrl}</span>
+                  {timeStr && <span className="text-[10px] text-gray-500">{timeStr}</span>}
+                </button>
+                <button
+                  onClick={(e) => handleRemove(e, item.url)}
+                  className="px-3 py-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                  title="Remove from history"
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500 italic text-center py-4">No recent summaries.</p>
+      )}
     </div>
-  </div>
-);
+  );
+};
